@@ -5,7 +5,7 @@ import * as fs from 'fs';
 var OBJ = require('webgl-obj-loader');
 
 class Mesh extends Drawable {
-    // index, position, normals array for VBOs
+  // index, position, normals array for VBOs
   indices: number[] = [];
   positions: number[] = [];
   normals: number[] = [];
