@@ -80,13 +80,13 @@ class Particle {
 
         // spherical bounding: if out of bounds, reverse acceleration 
         // to get back into bounds
-        if (vec3.len(this.currPos) > 200) {
+        if (vec3.len(this.currPos) > 150) {
             vec3.scale(this.acceleration, this.currPos, -0.01);
             this.out = true;
         }
 
         // reset acceleration once back in bounds
-        if (this.out && vec3.len(this.currPos) < (Math.random() * 200 - 100)) {
+        if (this.out && vec3.len(this.currPos) < (Math.random() * 150 - 50)) {
             console.log(this.out);
             vec3.scale(this.acceleration, this.acceleration, 0);
             var vx = Math.random() * 0.5 - ( 0.5 / 2);
