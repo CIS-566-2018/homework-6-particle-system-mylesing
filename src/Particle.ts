@@ -2,9 +2,6 @@ import {vec3, vec4} from 'gl-matrix';
 import Square from './geometry/Square';
 
 class Particle {
-
-    // basic info per particle for verlet integration
-    prevPos : vec3;
     currPos : vec3;
     attractionPos : vec3;
     color : vec3;
@@ -21,9 +18,7 @@ class Particle {
 
     // constructor
     // mass, current position, attraction position, velocity
-    constructor(m : number, p : vec3, p2 : vec3, v : vec3) {
-        this.mass = m;
-        this.prevPos = vec3.create();
+    constructor(p : vec3, p2 : vec3, v : vec3) {
         this.currPos = p;
         this.color = vec3.create();
         this.attractionPos = p2;
@@ -36,17 +31,6 @@ class Particle {
         this.out = false;
     }
 
-    // function to update position to diven position vector
-    updatePos(p : vec3) {
-        this.currPos = vec3.fromValues(p[0], p[1], p[2]);
-    }
-
-    // function to update position to which the particle should attract to
-    updateAttractionPos(p : vec3) {
-        this.attractionPos = vec3.fromValues(p[0], p[1], p[2]);
-    }
-
-    // yayyy update
     update(time : number) {
         var delT = 0.1;
         var dir = vec3.fromValues(0, 0, 0);
@@ -81,13 +65,12 @@ class Particle {
         // spherical bounding: if out of bounds, reverse acceleration 
         // to get back into bounds
         if (vec3.len(this.currPos) > 150) {
-            vec3.scale(this.acceleration, this.currPos, -0.01);
+            vec3.scale(this.acceleration, this.currPos, -0.1);
             this.out = true;
         }
 
         // reset acceleration once back in bounds
         if (this.out && vec3.len(this.currPos) < (Math.random() * 150 - 50)) {
-            console.log(this.out);
             vec3.scale(this.acceleration, this.acceleration, 0);
             var vx = Math.random() * 0.5 - ( 0.5 / 2);
             var vy = Math.random() * 0.5 - (0.5 / 2);
@@ -111,9 +94,20 @@ class Particle {
 
         this.happy_pride_month(time);
         
-     }
+    }
 
-     lerp(i : number, c1 : vec3, c2 : vec3) {
+    updatePos(p : vec3) {
+        this.currPos = vec3.fromValues(p[0], p[1], p[2]);
+    }
+
+    updateAttractionPos(p : vec3) {
+        this.attractionPos = vec3.fromValues(p[0], p[1], p[2]);
+    }
+
+
+    /// COLOR VERTICES ///
+    
+    lerp(i : number, c1 : vec3, c2 : vec3) {
         //console.log(i);
         let color : vec3 = vec3.fromValues(0, 0, 0);
         let col1 : vec3 = vec3.fromValues(c2[0] * i, c2[1] * i, c2[2] * i);

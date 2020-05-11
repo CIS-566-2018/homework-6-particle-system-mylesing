@@ -8,6 +8,63 @@ import Camera from './Camera';
 import {setGL} from './globals';
 import Mesh from './geometry/Mesh';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import Drawable from './rendering/gl/Drawable';
+
+let mesh_id : number = 0;
+let mesh: Mesh = new Mesh();
+let heart: Mesh = new Mesh();
+let cat: Mesh = new Mesh();
+let surprise: Mesh = new Mesh();
+
+
+let mesh_list: any = {
+  'none': null,
+  'heart' : heart,
+  'cat' : cat,
+  'surprise' : surprise
+}
+
+function readFile(file : string, mesh: Mesh) {
+  let indices : Uint32Array = new Uint32Array(0);
+  let positions : Float32Array = new Float32Array(0);
+  let normals : Float32Array = new Float32Array(0);
+
+  var rawFile = new XMLHttpRequest();
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = function () {
+        if(rawFile.readyState === 4) {
+            if(rawFile.status === 200 || rawFile.status == 0) {
+                var allText = rawFile.responseText;
+                var verts : number[] = [];
+
+                // break lines by new line 
+                // we really only need vertices so that's all we're reading in
+                var lines = allText.split('\n')
+                for (var i = 0; i < lines.length; i++) {
+                  // set vertices 
+                  // convert to number...
+                  if (lines[i].startsWith('v ')) {
+                    var line = lines[i].split(/\s+/);
+                    verts.push(+line[1]);
+                    verts.push(+line[2]);
+                    verts.push(+line[3]);
+                  }
+                }
+                mesh.positions = Float32Array.from(verts);
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+function loadMesh() {
+  for (var m in mesh_list) {
+    if (mesh_list[m] != null) {
+      let filename: string = "./" + m + ".obj";
+      readFile(filename, mesh_list[m]);
+    }
+  }
+}
 
 // initialize values
 var numParticles : number = 10000;
@@ -23,6 +80,7 @@ const controls = {
 };
 
 let square : Square;
+let currMesh : Mesh = new Mesh();
 let time : number = 0.0;
 
 // mouse controls
@@ -31,12 +89,9 @@ let mouseX : number = null;
 let mouseY : number = null;
 let mouseClick : number = 0;
 
-let particleArray : Particle[] = [];
-let targetArray : Particle[] = [];
-let colorsArray : Particle[] = [];
+let particles : Particle[] = [];
 
-let target : Particle = new Particle(10,
-                                     vec3.fromValues(0, 0, 0), 
+let target : Particle = new Particle(vec3.fromValues(0, 0, 0), 
                                      vec3.fromValues(0, 0, 0), 
                                      vec3.fromValues(0, 0, 0));
 
@@ -49,19 +104,13 @@ function loadScene() {
   square.create();
 
   // load in mesh
-  // mesh = new Mesh();
-  // mesh.loadBuffers('\sphere.obj');
-  // mesh.addPositions(vec3.create(), 1);
-  // mesh.setIdx(1);
-  // mesh.create();
-  // console.log(mesh);
 
   // reset target number each time!
   numTargets = 0;
-  particleArray = [];
+  particles = [];
 
   // push target onto the particle array
-  particleArray.push(target);
+  particles.push(target);
 
   for (let i = 0; i < numParticles; ++i) {
     // get random position between -100 and 100
@@ -74,14 +123,11 @@ function loadScene() {
     let vy = 2 * Math.random() - 1;
     let vz = 2 * Math.random() - 1;
 
-    // get random mass between 1 and 5
-    let m = 5 * Math.random() + 1;
-
     // mass, currpos, nextpos, vel
-    let p = new Particle(m, vec3.fromValues(px, py, pz), target.currPos, vec3.fromValues(vx, vy, vz));
+    let p = new Particle(vec3.fromValues(px, py, pz), target.currPos, vec3.fromValues(vx, vy, vz));
 
     // push particle onto the array
-    particleArray.push(p);
+    particles.push(p);
   }
 
   numTargets++;
@@ -93,23 +139,44 @@ function loadScene() {
 
 function attractMesh() {
 
-//   if (mesh == null) {
-//     for (let i = 0; i < numParticles; ++i) {
-//       particleArray[i].repel = false;
-//       particleArray[i].attract = false;
-//     }
-//   } else {
-//     for (let i = 0; i < particleArray.length; ++i) {
-//       // set attraction targets.... 
-//       var attractorIdx = i % mesh.initPos.length;
-//       var attractionPt = vec3.fromValues(mesh.initPos[attractorIdx][0], 
-//                                      mesh.initPos[attractorIdx][1],
-//                                      mesh.initPos[attractorIdx][2]);
-//       particleArray[i].updateAttractionPos(attractionPt);
-//       particleArray[i].repel = false;
-//       particleArray[i].attract = true;
-//     }
-//   }
+  if (mesh == null) {
+    // reset
+    scatterParticles();
+  } else {
+    // assign attraction positions to mesh positions
+    let verts : vec3[] = [];
+    for (let i = 0; i < currMesh.positions.length; i  += 3) {
+      let v : vec3 = vec3.fromValues(currMesh.positions[i],
+                                     currMesh.positions[i + 1],
+                                     currMesh.positions[i + 2]);
+
+      if (mesh_id == 1) {
+        vec3.scale(v, v, 7);
+        vec3.rotateY(v, v, vec3.create(), 1.58);
+        vec3.subtract(v, v, vec3.fromValues(0, 40, 0));
+      }
+      
+      if (mesh_id == 2) {
+        vec3.scale(v, v, 0.15);
+        vec3.rotateY(v, v, vec3.create(), 2.0);
+        vec3.subtract(v, v, vec3.fromValues(0, 30, 0));
+      }  
+      
+      if (mesh_id == 3) {
+        vec3.scale(v, v, 0.5);
+        vec3.subtract(v, v, vec3.fromValues(0, 40, 0));
+      }  
+      
+      verts.push(v);
+    }
+
+    for (let i = 0; i < particles.length; ++i) {
+      let p : Particle = particles[i];
+      p.updateAttractionPos(verts[i % verts.length]);
+      p.attract = true;
+      p.attractOBJ = true;
+    }
+  }
 }
 
 function updateVBOs() {
@@ -117,7 +184,7 @@ function updateVBOs() {
   let colArray : number[] = [];
 
   for (let i = 0; i < numParticles; ++i) {
-    let curr = particleArray[i];
+    let curr = particles[i];
     posArray.push(curr.currPos[0]);
     posArray.push(curr.currPos[1]);
     posArray.push(curr.currPos[2]);
@@ -137,14 +204,14 @@ function updateVBOs() {
 // update particles caller function
 function updateParticles(time : number) {
   for (let i = 0; i < numParticles; ++i) {
-    particleArray[i].update(time);
+    particles[i].update(time);
   }
 }
 
 // scatter particles 
 function scatterParticles() {
   for (let i = 0; i < numParticles; ++i) {
-    let p = particleArray[i];
+    let p = particles[i];
     var a = 0.5;
     var vx = Math.random() * a - (a / 2);
     var vy = Math.random() * a - (a / 2);
@@ -179,24 +246,19 @@ function main() {
   gui.add(controls, 'scatter particles!');
 
   // change mesh
-  // var meshChange = gui.add(controls, 'mesh', ['none', 'sphere', 'heart', 'electric mouse']);
-  // meshChange.onChange(function (name : string) {
-  //   if (name != 'none') {
-  //     if (name == 'sphere') {
-  //       mesh.loadBuffers('\sphere.obj');
-  //     } else if (name == 'heart') {
-  //       mesh.loadBuffers('\heart.obj');
-  //     } else if (name == 'electric mouse') {
-  //       mesh.loadBuffers('\pikachu.obj');
-  //     }
-  //     mesh.addPositions(vec3.create(), 1);
-  //     mesh.setIdx(1);
-  //     mesh.create();
-  //     attractMesh();
-  //   } else {
-  //     scatterParticles();
-  //   }
-  // });
+  var meshChange = gui.add(controls, 'mesh', ['none', 'heart', 'cat', 'surprise']);
+  meshChange.onChange(function (name : string) {
+    if (name == 'none') {
+      scatterParticles();
+    } else {
+      if (name == 'heart') mesh_id = 1;
+      if (name == 'cat') mesh_id = 2;
+      if (name == 'surprise') mesh_id = 3;
+      currMesh = mesh_list[name];
+      attractMesh();
+    }
+    
+  });
 
   //gui.add(controls, 'go to mesh!');
   gui.add(controls, 'Load Scene');
@@ -211,13 +273,15 @@ function main() {
   // Later, we can import `gl` from `globals.ts` to access it
   setGL(gl);
 
+  loadMesh();
+
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(0, 0, -50), vec3.fromValues(-5, -5, -1));
+  const camera = new Camera(vec3.fromValues(0, 0, -90), vec3.fromValues(-5, -5, -1));
 
   const renderer = new OpenGLRenderer(canvas);
-  renderer.setClearColor(0.1, 0.1, 0.1, 1);
+  renderer.setClearColor(0, 0, 0, 1);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
 
@@ -236,13 +300,13 @@ function main() {
     // left click
     if (mouseClick == 1) {
       for (let i = 0; i < numParticles; ++i) {
-        particleArray[i].attract = true;
-        particleArray[i].repel = false;
+        particles[i].attract = true;
+        particles[i].repel = false;
       }
     } else if (mouseClick == 3) {
       for (let i = 0; i < numParticles; ++i) {
-        particleArray[i].attract = false;
-        particleArray[i].repel = true;
+        particles[i].attract = false;
+        particles[i].repel = true;
       }
     }
   }
@@ -252,7 +316,7 @@ function main() {
     mousePressed = false;
     scatterParticles;
     for (let i = 0; i < numParticles; ++i) {
-      let p = particleArray[i];
+      let p = particles[i];
       p.attract = false;
       p.repel = false;
       p.acceleration = vec3.fromValues(0, 0, 0);
@@ -325,7 +389,7 @@ function main() {
       target.updatePos(vec3.fromValues(convertedPos[0], convertedPos[1], convertedPos[2]));
 
       for (let i = 0; i < numParticles; ++i) {
-        particleArray[i].updateAttractionPos(vec3.fromValues(convertedPos[0], 
+        particles[i].updateAttractionPos(vec3.fromValues(convertedPos[0], 
                                                              convertedPos[1], 
                                                              convertedPos[2]));
       }
