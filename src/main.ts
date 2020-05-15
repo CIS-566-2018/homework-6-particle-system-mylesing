@@ -10,6 +10,8 @@ import Mesh from './geometry/Mesh';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import Drawable from './rendering/gl/Drawable';
 
+/////// MESH LOADING ///////
+
 let mesh_id : number = 0;
 let mesh: Mesh = new Mesh();
 let heart: Mesh = new Mesh();
@@ -66,9 +68,12 @@ function loadMesh() {
   }
 }
 
+///// PARTICLE INFORMATION ////
+
 // initialize values
 var numParticles : number = 10000;
 var numTargets : number = 0;
+
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -91,6 +96,12 @@ let mouseClick : number = 0;
 
 let particles : Particle[] = [];
 
+// schooling stuff
+var avg_heading : vec3;
+var avg_pos : vec3;
+var family : number;
+var reverse : boolean;
+
 let target : Particle = new Particle(vec3.fromValues(0, 0, 0), 
                                      vec3.fromValues(0, 0, 0), 
                                      vec3.fromValues(0, 0, 0));
@@ -103,8 +114,6 @@ function loadScene() {
   square = new Square();
   square.create();
 
-  // load in mesh
-
   // reset target number each time!
   numTargets = 0;
   particles = [];
@@ -114,9 +123,9 @@ function loadScene() {
 
   for (let i = 0; i < numParticles; ++i) {
     // get random position between -100 and 100
-    let px = target.currPos[0] + 200 * Math.random() - 100;
-    let py = target.currPos[0] + 200 * Math.random() - 100;
-    let pz = target.currPos[0] + 200 * Math.random() - 100;
+    let px = target.currPos[0] + 150 * Math.random() - 100;
+    let py = target.currPos[0] + 150 * Math.random() - 100;
+    let pz = target.currPos[0] + 150 * Math.random() - 100;
 
     // get random velocity between -1 and 1
     let vx = 2 * Math.random() - 1;

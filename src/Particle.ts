@@ -16,6 +16,7 @@ class Particle {
     attractOBJ : boolean;
     out : boolean;
 
+
     // constructor
     // mass, current position, attraction position, velocity
     constructor(p : vec3, p2 : vec3, v : vec3) {
@@ -106,7 +107,7 @@ class Particle {
 
 
     /// COLOR VERTICES ///
-    
+
     lerp(i : number, c1 : vec3, c2 : vec3) {
         //console.log(i);
         let color : vec3 = vec3.fromValues(0, 0, 0);
