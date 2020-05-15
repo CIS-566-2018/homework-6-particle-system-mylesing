@@ -1,5 +1,7 @@
 
-Particle System
+# Particle System
+
+![Image of Heart](/heart.png)
 
 Physics-based procedural animation of particles and to practice using OpenGL's instanced rendering system.
 
@@ -10,7 +12,7 @@ Physics-based procedural animation of particles and to practice using OpenGL's i
 - Mesh Surface Attraction: the particles move towards specified meshes!
 
 **Video Link:** 
-
+https://drive.google.com/open?id=1UdOtOD3Z7eyxUhPg1odKCEzFLPFqb7rQ 
 
 **External Resources:**
 Reading in a Text File: https://stackoverflow.com/questions/14446447/how-to-read-a-local-text-file
