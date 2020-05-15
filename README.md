@@ -15,8 +15,8 @@ Physics-based procedural animation of particles and to practice using OpenGL's i
 https://drive.google.com/open?id=1UdOtOD3Z7eyxUhPg1odKCEzFLPFqb7rQ 
 
 **External Resources:**
-Reading in a Text File: https://stackoverflow.com/questions/14446447/how-to-read-a-local-text-file
-Heart Shaped Vertices: https://www.youtube.com/watch?v=aNR4n0i2ZlM
+- Reading in a Text File: https://stackoverflow.com/questions/14446447/how-to-read-a-local-text-file
+- Heart Shaped Vertices: https://www.youtube.com/watch?v=aNR4n0i2ZlM
 
 **Inspiration:** DMD and CGGT alumnus Nop Jiarathanakul's [Particle Dream application](http://www.iamnop.com/particles/).
 
